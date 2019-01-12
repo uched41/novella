@@ -4,16 +4,16 @@ from novella.device.lampbody import Lampbody
 from novella.device.lampshade import Lampshade
 from novella.device.lamp import Lamp
 from novella.database.database_client import my_database
-from novella.filemanager.filemanger import my_filemanager
+from novella.filemanager.filemanager import my_filemanager
 from novella.mqtt.mqtt_client import my_mqtt
 from novella.response.response import my_responses
-from novella.imageConverter import my_imageConverter
+from novella.image.imageConverter import my_imageConverter
 
 import flask
 from flask import request, jsonify
 
 app = flask.Flask(__name__)
-api = config["DEBUG"] = True
+app.config["DEBUG"] = True
 
 class ApiLogger:
     @staticmethod
@@ -31,7 +31,7 @@ def api_lamps():
     params = request.args
 
     command = params.get("command")     # Get command to be run
-
+    ApiLogger.debug("received new command: " + str(params))
 
     ####
     # SET SETTING
@@ -46,9 +46,9 @@ def api_lamps():
         response = None
         try:
             tlamp = Lamp(name=lampname)
-            if type="lampbody":
+            if type=="lampbody":
                 tlamp.lampbody.set_setting(setting, value)
-            if type="lampshade":
+            elif type=="lampshade":
                 tlamp.lamshade.set_setting(setting, value)
         except Exception as e:
             ApiLogger.debug(e)
@@ -63,7 +63,7 @@ def api_lamps():
     # GET SETTING
     # args: command, lamp_name, device_type, setting
     ###
-    if command == "get_setting":
+    elif command == "get_setting":
         lampname = params.get("lamp_name")
         device_type = params.get("device_type")
         setting = params.get("setting")
@@ -71,9 +71,9 @@ def api_lamps():
         ans = None
         try:
             tlamp = Lamp(name=lampname)
-            if type = "lampbody":
+            if type == "lampbody":
                 ans = tlamp.lampbody.get_setting(setting)
-            else if type = "lampshade":
+            elif type == "lampshade":
                 ans = tlamp.lampshade.get_setting(setting)
         except Exception as e:
             ApiLogger.debug(e)
@@ -86,7 +86,7 @@ def api_lamps():
     # SEND IMAGE TO LAMP
     # args: command, lamp_name, image_name
     ###
-    if command == "send_image":
+    elif command == "send_image":
         pass
 
 
@@ -95,7 +95,7 @@ def api_lamps():
     # SEND COMMAND TO LAMP
     # args: command, lamp_name, device_type, lamp_command
     ###
-    if command == "send_command":
+    elif command == "send_command":
         lampname = params.get("lamp_name")
         type = params.get("device_type")
         lcommand = params.get("lamp_command")
@@ -105,7 +105,7 @@ def api_lamps():
             tlamp = Lamp(name=lampname)
             if type == "lampbody":
                 ans = tlamp.lambody.send_command(lcommand)
-            if type == "lampshade":
+            elif type == "lampshade":
                 ans = tlamp.lampshade.send_command(lcommand)
         except Exception as e:
             ApiLogger.debug(e)
@@ -117,7 +117,7 @@ def api_lamps():
     # GET ONLINE DEVICES
     # args: command, device_type
     ###
-    if command = "get_online_devices":
+    elif command == "get_online_devices":
         type = params.get("device_type")
         ans = my_responses.get_online_devices(type)
         return jsonify(response=ans)
@@ -127,7 +127,7 @@ def api_lamps():
     # GET ONLINE LAMPS
     # args: command
     ###
-    if command == "get_online_lamps":
+    elif command == "get_online_lamps":
         ans = my_responses.get_online_lamps()
         return jsonify(response=ans)
 
@@ -136,7 +136,7 @@ def api_lamps():
     # MAKE NEW LAMP
     # args: command, body_id, shade_id, lamp_name
     ###
-    if command == "make_lamp":
+    elif command == "make_lamp":
         body_id = params.get("body_id")
         shade_id = params.get("shade_id")
         lampname = params.get("lamp_name")
@@ -151,7 +151,10 @@ def api_lamps():
             return
         return jsonify(response="True")
 
+    return jsonify(response=None)
+
 
 
 if __name__ == '__main__':
     app.run(debug=True)
+    ApiLogger.debug("Starting server")

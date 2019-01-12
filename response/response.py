@@ -7,7 +7,7 @@ import time
 class Response:
     def __init__(self):
         self.data = dict()
-
+        self.online_timeout = 5
     # self.data = {
     #           "D91980029":{
     #               "response":"OK",
@@ -17,6 +17,10 @@ class Response:
     #               },
     #       }
     def set(self, type, device, response):       # set a response value
+        if device not in self.data.keys():
+            d = dict()
+            self.data[device] = d
+
         self.data[device]["type"] = type
         self.data[device]["response"] = response
         self.data[device]["new"] = True
@@ -31,13 +35,24 @@ class Response:
         return None
 
 
+    def is_updated(self, device):
+        ans = self.data.get(device)
+        if ans:
+            return ans.get("new")
+        return False
+
+
     def set_online(self, device):
         self.data[device]["last_updated"] = time.time()
 
 
+    def set_offline(self, device):
+        self.data[device]["last_updated"] = 0
+
+
     def is_online(self, device):
-        dev = self.data.get(device):
-        if time.time() - dev.get("last_updated") < (60*5):
+        dev = self.data.get(device)
+        if time.time() - dev.get("last_updated") < (60*self.online_timeout):
             return True
         return False
 
@@ -45,14 +60,15 @@ class Response:
     def get_online_devices(self, type):     # get devices of a particular type that are online
         ans = []
         for dev in self.data.keys():
-            dev = self.data.get(dev)
-            if dev.get("type") == type:
-                if ( time.time() - dev.get("last_updated") < (60*5) ):   # check timeout of 5mins
+            dev2 = self.data.get(dev)
+            if dev2.get("type") == type:
+                if ( time.time() - dev2.get("last_updated") < (60*self.online_timeout) ):   # check timeout of 5mins
                     ans.append(dev)
+        return ans
 
 
     def get_online_lamps(self):
-        ans = self.get_online_devices(self, "lampbody"):
+        ans = self.get_online_devices("lampbody")
         tans = []
         # get names of lamps whose lampbodies are online
         for body in ans:
@@ -69,6 +85,7 @@ class Response:
         while (time.time()-oldTime < (timeout*60) ):
             if self.data[device]["new"] is True:
                 res = self.data[device]["response"]
+                self.data[device]["new"] = False
                 return res
         return None
 

@@ -5,7 +5,6 @@ from novella.config.config import my_config
 class Database:
 
     def __init__(self, mysql_host, mysql_user, mysql_password, mysql_db):
-
         self.__host = mysql_host
         self.__user = mysql_user
         self.__password = mysql_password
@@ -14,19 +13,17 @@ class Database:
 
 
     def connect(self):
-
         Database.debug("Connecting to database")
         try:
             self.__mydb = mysql.connect(host=self.__host, user=self.__user, passwd=self.__password, db=self.__database)
         except Exception as e:
             Database.error("Error initializing database")
-            return False
+            raise Exception("Unable to connect to database")
         else:
             return True
 
 
     def run_command(self, **kwargs):
-
         if not self.connect() or "command" not in kwargs.keys():   # connect to database first
             return False
 
@@ -61,6 +58,7 @@ class Database:
         return self.run_command(command=command)
 
 
+    # args: columns, table
     def create_table(self, **kwargs):
         if not Database.in_list(["columns", "table"], kwargs.keys()):
             Database.error("Unable to create table")
@@ -70,6 +68,9 @@ class Database:
         return self.run_command(command=command)
 
 
+    # args: table  - table to search in
+    #       column - column to check in
+    #       query  - value to expect in column
     def is_in_table(self, **kwargs):
         if not Database.in_list(["table", "column", "query"], kwargs.keys()):
             raise Exception
@@ -144,7 +145,7 @@ class Database:
         if not isinstance(scolumns, list) or not isinstance(value, list):
             raise Exception("scolumns and value arguments must be of type list")
             return False
- 
+
         cmd = "UPDATE {} SET ".format(table)
         for col in scolumns:
             cmd = cmd + col + " = %s"

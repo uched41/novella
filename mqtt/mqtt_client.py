@@ -60,9 +60,10 @@ class Mqtt:
 
     def start_daemon(self):
         Mqtt.debug("Starting mqtt loop")
-        self.my_thread = threading.Thread(target = self.__mqtt_client.loop_forever())
-        threads.append(self.my_thread)
-        self.my_thread.start()
+        self.__mqtt_client.loop_start()
+        #self.my_thread = threading.Thread(target = self.__mqtt_client.loop_forever())
+        #threads.append(self.my_thread)
+        #self.my_thread.start()
 
 
     @staticmethod

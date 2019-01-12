@@ -1,7 +1,7 @@
 from novella.logger.logger import logger
 from novella.config.config import my_config
 from novella.device.lampbody import Lampbody
-from novell.device.lampshade import Lampshade
+from novella.device.lampshade import Lampshade
 from novella.database.database_client import my_database
 import novella.utils.utils as utils
 

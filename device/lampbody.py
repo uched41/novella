@@ -52,4 +52,4 @@ class Lampbody(Mcu):
         logger.error("Lampshade", *args)
 
 
-my_lampbody = Lampbody(device_id="D48084332")
+#my_lampbody = Lampbody(device_id="D48084332")
