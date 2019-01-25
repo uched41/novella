@@ -7,7 +7,7 @@ import time
 class Response:
     def __init__(self):
         self.data = dict()
-        self.online_timeout = 5
+        self.online_timeout = 120   # seconds
     # self.data = {
     #           "D91980029":{
     #               "response":"OK",
@@ -42,8 +42,9 @@ class Response:
         return False
 
 
-    def set_online(self, device):
+    def set_online(self, device, type):
         self.data[device]["last_updated"] = time.time()
+        self.data[device]["type"] = type
 
 
     def set_offline(self, device):
@@ -62,7 +63,7 @@ class Response:
         for dev in self.data.keys():
             dev2 = self.data.get(dev)
             if dev2.get("type") == type:
-                if ( time.time() - dev2.get("last_updated") < (60*self.online_timeout) ):   # check timeout of 5mins
+                if ( time.time() - dev2.get("last_updated") < (self.online_timeout) ):   # check if we have not received ping in a long time
                     ans.append(dev)
         return ans
 

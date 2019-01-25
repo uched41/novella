@@ -10,7 +10,7 @@ mqtt_connected = False
 
 class Mqtt:
 
-    def __init__(self, server="localhost", port=1883, base_topic="novella"):
+    def __init__(self, server="localhost", port=1883, base_topic="novella/devices"):
 
         self.__server = server
         self.__port  = port
@@ -59,6 +59,7 @@ class Mqtt:
 
 
     def start_daemon(self):
+        self.subscribe("novella/devices/ping")
         Mqtt.debug("Starting mqtt loop")
         self.__mqtt_client.loop_start()
         #self.my_thread = threading.Thread(target = self.__mqtt_client.loop_forever())
@@ -72,6 +73,8 @@ class Mqtt:
         Mqtt.debug("Connected to host")
         mqtt_connected = True           # Flag to enable us know connection state
 
+        #TODO: Make modular
+        client.subscribe("novella/devices/#")
 
     @staticmethod
     def on_disconnect(client, userdata, flags, rc):
@@ -84,22 +87,25 @@ class Mqtt:
     def on_message(client, userdata, msg):
         topic = msg.topic
         topic_parts = topic.split('/')
-        data = ast.literal_eval(msg.payload)
+
+        data = ast.literal_eval((msg.payload).decode())
 
         # check if this is a ping message and act accordingly
         if "ping" in topic_parts:
             id = data.get("id")
-            my_responses.set_online(id)
+            type = data.get("type")
+            Mqtt.debug("ping from {}".format(id))
+            my_responses.set_online(id, type)
 
 
         if "response" in topic_parts:
             id = data.get("id")
-            res = id.get("response")
+            res = data.get("response")
             Mqtt.debug( "{}: {}".format(id, res) )
             if "lampbody" in topic_parts:
-                my_responses.set("lampbody", id, "response", res)
+                my_responses.set("lampbody", id, res)
             if "lampshade" in topic_parts:
-                my_responses.set("lampshade", id, "response", res)
+                my_responses.set("lampshade", id, res)
 
     @staticmethod
     def debug(*args):

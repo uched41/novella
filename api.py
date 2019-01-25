@@ -13,7 +13,7 @@ import flask
 from flask import request, jsonify
 
 app = flask.Flask(__name__)
-app.config["DEBUG"] = True
+#app.config["DEBUG"] = True
 
 class ApiLogger:
     @staticmethod
@@ -147,8 +147,8 @@ def api_lamps():
             lamp = Lamp(name=lampname, lampbody=body, lampshade=shade)
         except Exception as e:
             ApiLogger.debug(e)
-            jsonify(response="Error")
-            return
+            return jsonify(response="Error")
+            
         return jsonify(response="True")
 
     return jsonify(response=None)
@@ -156,5 +156,5 @@ def api_lamps():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0')
     ApiLogger.debug("Starting server")

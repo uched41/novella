@@ -11,6 +11,9 @@ lamp_columns = " (No INT AUTO_INCREMENT, name TEXT, lampbody_id TEXT, lampshade_
 class Lamp:
 
     def __init__(self, **kwargs):
+        if my_database.create_table(table="lamps", columns=lamp_columns) is False:
+            raise Exception("Unable to create lamp table")
+
         # check if we already have this lamp in database
         if my_database.is_in_table(table="lamps", column="name", query=kwargs["name"]):
             Lamp.debug("Lamp already in Database")
@@ -24,13 +27,11 @@ class Lamp:
             self.lampbody = Lampbody(device_id=body_id)
             self.lampshade = Lampshade(device_id=shade_id)
             return
+        Lamp.debug("Making new Lamp.")
 
         # ensure that we have all necessary arguments
-        if not Database.in_list( ["name", "lampbody", "lampshade"], kwargs.keys() ):
+        if not my_database.in_list( ["name", "lampbody", "lampshade"], kwargs.keys() ):
             raise Exception("Incomplete args")
-
-        if my_database.create_table(table="lamps", column=lamp_columns) is False:
-            raise Exception("Unable to create lamp table")
 
         Lamp.debug("Initializing Lamp")
         self.name = kwargs["name"]
