@@ -43,6 +43,9 @@ class Response:
 
 
     def set_online(self, device, type):
+        if device not in self.data.keys():
+            d = dict()
+            self.data[device] = d
         self.data[device]["last_updated"] = time.time()
         self.data[device]["type"] = type
 
@@ -73,7 +76,7 @@ class Response:
         tans = []
         # get names of lamps whose lampbodies are online
         for body in ans:
-            temp = my_database.get_from_table(table="lamps", column="lambody_id",\
+            temp = my_database.get_from_table(table="lamps", column="lampbody_id",\
                     query=body, dcolumn=["name"])
             temp = temp[0][0]
             tans.append(temp)
@@ -81,13 +84,18 @@ class Response:
         return tans
 
 
-    def wait_reply(self, device, timeout=3):
+    def wait_reply(self, device, timeout=5):
         oldTime = time.time()
-        while (time.time()-oldTime < (timeout*60) ):
+        print("Waiting for reply from: {}".format(device))
+        while (time.time()-oldTime < (timeout) ):
             if self.data[device]["new"] is True:
                 res = self.data[device]["response"]
+                print("ehre")
+                print(res)
                 self.data[device]["new"] = False
                 return res
+
+        print("Timeout, NO response from {}".format(device))
         return None
 
 

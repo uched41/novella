@@ -34,55 +34,6 @@ def api_lamps():
     ApiLogger.debug("received new command: " + str(params))
 
     ####
-    # SET SETTING
-    # args: command, device_type, lamp_name, setting, value
-    ###
-    if command == "set_setting":
-        type = params.get("device_type")
-        lampname = params.get("lamp_name")
-        setting = params.get("setting")
-        value = params.get("value")
-
-        response = None
-        try:
-            tlamp = Lamp(name=lampname)
-            if type=="lampbody":
-                tlamp.lampbody.set_setting(setting, value)
-            elif type=="lampshade":
-                tlamp.lamshade.set_setting(setting, value)
-        except Exception as e:
-            ApiLogger.debug(e)
-            response = "error"
-        else:
-            response = "ok"
-
-        return jsonify(response=response)
-
-
-    ####
-    # GET SETTING
-    # args: command, lamp_name, device_type, setting
-    ###
-    elif command == "get_setting":
-        lampname = params.get("lamp_name")
-        device_type = params.get("device_type")
-        setting = params.get("setting")
-
-        ans = None
-        try:
-            tlamp = Lamp(name=lampname)
-            if type == "lampbody":
-                ans = tlamp.lampbody.get_setting(setting)
-            elif type == "lampshade":
-                ans = tlamp.lampshade.get_setting(setting)
-        except Exception as e:
-            ApiLogger.debug(e)
-            return jsonify(response="error")
-        else:
-            return jsonify(response="ok")
-
-
-    ####
     # SEND IMAGE TO LAMP
     # args: command, lamp_name, image_name
     ###
@@ -104,7 +55,7 @@ def api_lamps():
         try:
             tlamp = Lamp(name=lampname)
             if type == "lampbody":
-                ans = tlamp.lambody.send_command(lcommand)
+                ans = tlamp.lampbody.send_command(lcommand)
             elif type == "lampshade":
                 ans = tlamp.lampshade.send_command(lcommand)
         except Exception as e:

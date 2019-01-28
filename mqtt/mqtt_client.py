@@ -94,11 +94,11 @@ class Mqtt:
         if "ping" in topic_parts:
             id = data.get("id")
             type = data.get("type")
-            Mqtt.debug("ping from {}".format(id))
+            Mqtt.debug("ping from {} {}".format(type, id))
             my_responses.set_online(id, type)
 
 
-        if "response" in topic_parts:
+        elif "response" in topic_parts:
             id = data.get("id")
             res = data.get("response")
             Mqtt.debug( "{}: {}".format(id, res) )

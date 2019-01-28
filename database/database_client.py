@@ -13,7 +13,7 @@ class Database:
 
 
     def connect(self):
-        Database.debug("Connecting to database")
+        #Database.debug("Connecting to database")
         try:
             self.__mydb = mysql.connect(host=self.__host, user=self.__user, passwd=self.__password, db=self.__database)
         except Exception as e:

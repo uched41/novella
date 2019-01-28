@@ -48,7 +48,6 @@ class Mcu:
         topic = my_config.get("mqtt", "device_topic_base")
         topic = "{}/{}".format(topic, self.device_id)
 
-        #TODO:  edit to use json format, { "type": "settings", value: "...."}
         my_mqtt.publish(topic, command)
         ans = my_responses.wait_reply(self.device_id)
         if ans == None:
