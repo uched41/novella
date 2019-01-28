@@ -45,6 +45,7 @@ class Response:
     def set_online(self, device, type):
         if device not in self.data.keys():
             d = dict()
+            d["new"] = False 
             self.data[device] = d
         self.data[device]["last_updated"] = time.time()
         self.data[device]["type"] = type
@@ -90,8 +91,6 @@ class Response:
         while (time.time()-oldTime < (timeout) ):
             if self.data[device]["new"] is True:
                 res = self.data[device]["response"]
-                print("ehre")
-                print(res)
                 self.data[device]["new"] = False
                 return res
 

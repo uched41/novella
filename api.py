@@ -37,7 +37,7 @@ def api_lamps():
     # SEND IMAGE TO LAMP
     # args: command, lamp_name, image_name
     ###
-    elif command == "send_image":
+    if command == "send_image":
         pass
 
 
