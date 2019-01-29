@@ -38,8 +38,18 @@ def api_lamps():
     # args: command, lamp_name, image_name
     ###
     if command == "send_image":
-        pass
+        lampname = params.get("lamp_name")
+        imgname = params.get("image_name")
 
+        ans = "OK"
+        try: 
+            tlamp = Lamp(name=lampname)
+            tlamp.lampshade.send_image(imgname)
+        except Exception as e:
+            ApiLogger.debug(e)
+            ans = "Error"
+
+        return jsonify(response=ans)
 
 
     ####

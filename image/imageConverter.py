@@ -15,18 +15,20 @@ class ImageConverter:
         ImageConverter.debug("Converting image {}".format(imagename))
         imgname = os.path.join( my_filemanager.image_dir, imagename)
         self.isImage = False
-
+        outputFile = " "
+        retbin = ""
         try:
             self.im = Image.open(imgname)
             self.owidth, self.oheight = self.im.size
             self.info = self.im.info
             temp = imagename.split('.')[0] + '.bin'
+            retbin = temp
             outputFile = os.path.join(my_filemanager.bin_dir, temp)
         except Exception as e:
             ImageConverter.debug(e)
-            return False
+            return None
 
-        newWidth = int(self.owidth * self.fixedLength / self.oheight)
+        newWidth = int(self.owidth * self.fixed_length / self.oheight)
         newSize = newWidth, self.fixed_length
 
         self.im = self.im.convert('RGB')    # convert to rgb
@@ -45,7 +47,7 @@ class ImageConverter:
                     myf.write( tem.to_bytes(1, byteorder='big') )
 
         ImageConverter.debug("IMAGE: Bin file generated ..")
-        return True
+        return retbin
 
 
     @staticmethod

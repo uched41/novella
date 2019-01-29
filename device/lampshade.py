@@ -5,6 +5,7 @@ from novella.device.mcu import Mcu
 from novella.response.response import my_responses
 from novella.image.imageConverter import my_imageConverter
 from novella.filemanager.filemanager import my_filemanager
+from novella.mqtt.mqtt_client import my_mqtt
 import os, math
 
 lampshade_columns = " (No INT AUTO_INCREMENT, device_id TEXT, current_pair TEXT, settings TEXT, misc TEXT, PRIMARY KEY (No) ) "
@@ -39,13 +40,16 @@ class Lampshade(Mcu):
             Lampshade.debug("Device already in database: " + self.device_id)
 
 
-    def send_image(imgname):
-        if my_imageConverter.convert_image(imgname) is False:
-            return "error"
+    def send_image(self, imgname):
+        if imgname[0] == '/':
+            imgname = imgname[1:]
+            
+        bin_name = my_imageConverter.convert_image(imgname)
+        if bin_name == None:
+            raise Exception ("file error")
 
-        BUF_SIZE = 1024
-        bin_name = imgname.split('.')[0] + ".bin"
-        topic = "novella/devices/{}/{}/".format(self.device_id, "bin-data")
+        BUF_SIZE = 512
+        topic = "novella/devices/{}/{}/".format(self.device_id, "image")
 
         # to start we add 'start' to end of topic and send
         # device will read this topic end and act accordingly
@@ -54,22 +58,34 @@ class Lampshade(Mcu):
         no_lines = os.stat(fpath).st_size / BUF_SIZE
         no_lines = math.ceil(no_lines)
 
+        bin_name = "/" + bin_name   # needed for SPIFFS filesystem
+        Lampshade.debug("Sending file: {}, to device: {}".format(bin_name, self.device_id))
         ndata = { "filename": bin_name, "no_lines": no_lines}
 
+        Lampshade.debug("Sending start message")
         my_mqtt.publish(ntopic, str(ndata))
+        if my_responses.wait_reply(self.device_id) != "OK":     # wait for reply from device
+            Lampshade.debug("no reply from device")
+            raise Exception("device error")
 
         atopic = topic + "mid"
 
         with open(fpath, 'rb') as myfile:
-            temp = True
-            while temp:
-                temp = myfile.read(1024)
-                my_mqtt.publish(atopic ,temp)
-                my_responses.wait_reply(self.device.id) # wait for reply from device
-
+            content = myfile.read()
+            Lampshade.debug("Sending file content")
+            for x in range(0, no_lines):
+                temp = content[ (x*BUF_SIZE) : (x*BUF_SIZE+BUF_SIZE)]
+                my_mqtt.publish(atopic, temp)
+                if my_responses.wait_reply(self.device_id) != "OK":     # wait for reply from device
+                    Lampshade.debug("no reply from device")
+                    raise Exception("device error")
+            
         ltopic = topic + "end"
         my_mqtt.publish(ltopic, "End")
-
+        if my_responses.wait_reply(self.device_id) != "OK":     # wait for reply from device
+            Lampshade.debug("no reply from device")
+            raise Exception("device error")
+        Lampshade.debug("File send complete")
 
     def __str__(self):
         return self.device_id
